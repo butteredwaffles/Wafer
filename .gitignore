@@ -73,5 +73,6 @@ ENV/
 env.bak/
 venv.bak/
 
-# Cython debug symbols
-cython_debug/
+# Project-specific
+reference.txt
+img/
