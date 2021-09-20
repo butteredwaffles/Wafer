@@ -30,14 +30,13 @@ class Wafer:
         print("Beginning search for golden cookies.")
         while self.running:
             sc = pyautogui.screenshot()
-            for x in range(300, sc.width-300, 5):
-                for y in range(300, sc.height-300, 5):
+            for x in range(300, sc.width - 300):
+                for y in range(300, sc.height - 300):
                     pixel = sc.getpixel((x, y))
                     if pixel == self.GOLD_COOKIE_COLOR_1 or pixel == self.GOLD_COOKIE_COLOR_2:
                         print(f"Located golden cookie at ({x}, {y}). Clicking...")
                         with self._lock:
                             pyautogui.click(x=x, y=y)
-                        break
             # Wait x seconds in-between golden cookie searches.
             time.sleep(self.GOLD_COOKIE_SEARCH_TIMER)
 
@@ -62,6 +61,7 @@ class Wafer:
             print("Could not locate main cookie.")
 
     def tendGarden(self):
-        farm = Garden(_GARDEN_SAVE_TEST)
+        farmLevel = 5  # TODO: Grab from save file.
+        farm = Garden(_GARDEN_SAVE_TEST, farmLevel)
         from pprint import pprint
         pprint(farm.plots)
