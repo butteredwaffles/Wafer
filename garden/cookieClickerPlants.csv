@@ -1,0 +1,35 @@
+Name,ID,Cost,AgeTick,AgeTickR,Mature,Children,Immortal,Fungus,Weed,Plantable
+Baker's Wheat,0,1,7,2,35,,no,no,no,yes
+Thumbcorn,1,5,6,2,20,,no,no,no,yes
+Cronerice,2,15,0.4,0.7,55,,no,no,no,yes
+Gildmillet,3,15,2,1.5,40,,no,no,no,yes
+Ordinary Clover,4,25,1,1.5,35,,no,no,no,yes
+Golden Clover,5,125,4,12,50,,no,no,no,yes
+Shimmerlily,6,60,5,6,70,,no,no,no,yes
+Elderwort,7,180,0.3,0.5,90,,yes,no,no,yes
+Bakeberry,8,45,1,1,50,,no,no,no,yes
+Chocoroot,9,15,4,0,25,,no,no,no,yes
+White Chocoroot,10,15,4,0,25,,no,no,no,yes
+White Mildew,11,20,8,12,70,,no,yes,no,yes
+Brown Mold,12,20,8,12,70,,no,yes,no,yes
+Meddleweed,13,1,10,6,50,,no,no,yes,yes
+Whiskerbloom,14,20,2,2,60,,no,no,no,yes
+Chimerose,15,15,1,1.5,30,,no,no,no,yes
+Nursetulip,16,40,0.5,2,60,,no,no,no,yes
+Drowsyfern,17,90,0.05,0.1,30,,no,no,no,yes
+Wardlichen,18,10,5,4,65,,no,no,no,yes
+Keenmoss,19,50,4,5,65,,no,no,no,yes
+Queenbeet,20,90,1,0.4,80,,no,no,no,yes
+Juicy Queenbeet,21,120,0.04,0.08,85,,no,no,no,no
+Duketater,22,480,0.4,0.1,95,,no,no,no,yes
+Crumbspore,23,10,3,3,65,,no,yes,no,yes
+Doughshroom,24,100,1,2,85,,no,yes,no,yes
+Glovemorel,25,30,3,18,80,,no,yes,no,yes
+Cheapcap,26,40,6,16,40,,no,yes,no,yes
+Fool's Bolete,27,15,5,25,50,,no,yes,no,yes
+Wrinklegill,28,20,1,3,65,,no,yes,no,yes
+Green Rot,29,60,12,13,65,,no,yes,no,yes
+Shriekbulb,30,60,3,1,60,,no,no,no,yes
+Tidygrass,31,90,0.5,0,40,,no,no,no,yes
+Everdaisy,32,180,0.3,0,75,,yes,no,no,yes
+Ichorpuff,33,120,1,1.5,35,,no,yes,no,yes
