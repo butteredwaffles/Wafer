@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -10,7 +11,7 @@ class Building:
     level: int
 
 
-# Achievement data is loaded from a server-side file as it is not unique to users.
+# Achievement data is not unique to users.
 @dataclass
 class Achievement:
     id: int

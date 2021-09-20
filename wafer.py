@@ -3,6 +3,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+
 class Wafer:
     GOLD_COOKIE_SEARCH_TIMER = 0.5 # in seconds
     GOLD_COOKIE_COLOR_1 = (193, 155, 71)
