@@ -14,20 +14,29 @@ class Wafer:
     GOLD_COOKIE_COLOR_2 = (225, 201, 111)
 
     gardenEnabled: bool
+    mainAutoClickerEnabled: bool
+    goldenCookieAutoClickerEnabled: bool
 
-    def __init__(self, gardenEnabled: bool = True):
+    def __init__(self, gardenEnabled: bool = True,
+                 mainAutoClickerEnabled: bool = True,
+                 goldenCookieAuto: bool = True):
         self.cookieCoords = None
         self._lock = threading.Lock()
         self.running = True
+        self.mainClickingPaused = False
 
         self.gardenEnabled = gardenEnabled
+        self.mainAutoClickerEnabled = mainAutoClickerEnabled
+        self.goldenCookieAutoClickerEnabled = goldenCookieAuto
 
     def run(self):
         self.calibrate()
         with ThreadPoolExecutor(max_workers=3) as executor:
-            futures = [executor.submit(self.clickMainCookie),
-                       executor.submit(self.clickGoldenCookies),
-                       executor.submit(self.runTasks)]
+            if self.mainAutoClickerEnabled:
+                executor.submit(self.clickMainCookie)
+            if self.goldenCookieAutoClickerEnabled:
+                executor.submit(self.clickGoldenCookies)
+            executor.submit(self.runTasks)
 
     def clickGoldenCookies(self):
         print("Beginning search for golden cookies.")
@@ -39,7 +48,9 @@ class Wafer:
                     if pixel == self.GOLD_COOKIE_COLOR_1 or pixel == self.GOLD_COOKIE_COLOR_2:
                         print(f"Located golden cookie at ({x}, {y}). Clicking...")
                         with self._lock:
+                            self.mainClickingPaused = True
                             pyautogui.click(x=x, y=y)
+                            self.mainClickingPaused = False
             # Wait x seconds in-between golden cookie searches.
             time.sleep(self.GOLD_COOKIE_SEARCH_TIMER)
 
@@ -47,8 +58,9 @@ class Wafer:
         print("Clicking main cookie.")
         while self.running:
             try:
-                pyautogui.click(self.cookieCoords)
-                time.sleep(0.02)
+                while not self.mainClickingPaused:
+                    pyautogui.click(self.cookieCoords)
+                    time.sleep(0.02)
             except pyautogui.FailSafeException:
                 print("Detected failsafe. Exiting.")
                 self.running = False
@@ -75,19 +87,26 @@ class Wafer:
         farm = Garden(_GARDEN_SAVE_TEST, farmLevel)
 
     def _closeGarden(self):
-        for i in range(100):
-            coords = pyautogui.locateOnScreen("img/closeGarden.png", grayscale=True, confidence=0.8)
-            if coords:
-                with self._lock:
+        with self._lock:
+            for i in range(20):
+                coords = pyautogui.locateOnScreen("img/closeGarden.png", grayscale=True, confidence=0.8)
+                if coords:
+                    self.mainClickingPaused = True
                     pyautogui.click(coords)
-                return True
+                    self.mainClickingPaused = False
+                    return True
+        self.mainClickingPaused = False
         return False
 
     def _openGarden(self):
-        for i in range(100):
-            coords = pyautogui.locateOnScreen("img/viewGarden.png", grayscale=True, confidence=0.8)
-            if coords:
-                with self._lock:
+        with self._lock:
+            for i in range(20):
+                coords = pyautogui.locateOnScreen("img/viewGarden.png", grayscale=True, confidence=0.8)
+                if coords:
+                    self.mainClickingPaused = True
                     pyautogui.click(coords)
-                return True
+                    self.mainClickingPaused = False
+                    return True
+
+        self.mainClickingPaused = False
         return False
