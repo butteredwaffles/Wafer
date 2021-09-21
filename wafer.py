@@ -41,7 +41,6 @@ class Wafer:
             executor.submit(self.runTasks)
 
     def clickGoldenCookies(self):
-        print("Beginning search for golden cookies.")
         sc = pyautogui.screenshot()
         for x in range(200, sc.width - 200, 2):
             for y in range(200, sc.height - 200, 2):
@@ -53,7 +52,6 @@ class Wafer:
                         pyautogui.click(x=x, y=y)
                         self.mainClickingPaused = False
                     return True
-        print("No golden cookie found.")
         return False
 
     def clickMainCookie(self):
@@ -117,7 +115,12 @@ class Wafer:
             for plot in farm.plots:
                 if plot.isMature:
                     if plot.ticksUntilDecay <= 3:
-                        coord = farm.getPlotCoords(plot)
+                        if not farm.farmPlotCoords:
+                            self._openGarden()
+                            coord = farm.getPlotCoords(plot)
+                            self._closeGarden()
+                        else:
+                            coord = farm.getPlotCoords(plot)
                         if coord:
                             coords.append([plot, coord])
             if len(coords) > 0:
@@ -135,7 +138,7 @@ class Wafer:
     def _closeGarden(self):
         for i in range(20):
             if self.running:
-                coords = pyautogui.locateOnScreen("img/closeGarden.png", grayscale=True, confidence=0.8)
+                coords = pyautogui.locateOnScreen("img/closeGarden.png", grayscale=True, confidence=0.9)
                 if coords:
                     pyautogui.click(coords)
                     return True

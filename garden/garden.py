@@ -51,18 +51,21 @@ class Garden:
         self.loadAllPlantData(data[10])
         self.loadAllPlotData(':'.join(data[11:len(data)]))
 
-    def getPlotCoords(self, plant: Plant):
-        farmPlotCoords = None
-        for i in range(10):
-            farmPlotCoords = pyautogui.locateCenterOnScreen("img/gardenPlot.png", grayscale=True, confidence=0.8)
+        self.farmPlotCoords = None
 
-            if farmPlotCoords:
-                print("Found plot at " + str(farmPlotCoords))
-                pyautogui.moveTo(farmPlotCoords)
-                break
-        # farmPlotCoords holds location of [0, 0] plot
-        if farmPlotCoords:
-            point = pyautogui.Point(farmPlotCoords.x + (60*plant.x), farmPlotCoords.y + (60*plant.y))
+    def getPlotCoords(self, plant: Plant):
+        #  This is necessary since tooltips can block the identification.
+        pyautogui.moveTo(x=30, y=30)
+        if not self.farmPlotCoords:
+            for i in range(10):
+                farmPlotCoords = pyautogui.locateCenterOnScreen("img/gardenPlot.png", grayscale=True, confidence=0.8)
+
+                if farmPlotCoords:
+                    self.farmPlotCoords = farmPlotCoords
+                    break
+            # farmPlotCoords holds location of [0, 0] plot
+        if self.farmPlotCoords:
+            point = pyautogui.Point(self.farmPlotCoords.x + (60*plant.x), self.farmPlotCoords.y + (60*plant.y))
             return point
         return None
 
