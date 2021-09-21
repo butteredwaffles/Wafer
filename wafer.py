@@ -1,6 +1,7 @@
 import pyautogui
 import threading
 import base64
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 
@@ -42,8 +43,8 @@ class Wafer:
     def clickGoldenCookies(self):
         print("Beginning search for golden cookies.")
         sc = pyautogui.screenshot()
-        for x in range(300, sc.width - 300):
-            for y in range(300, sc.height - 300):
+        for x in range(200, sc.width - 200, 2):
+            for y in range(200, sc.height - 200, 2):
                 pixel = sc.getpixel((x, y))
                 if pixel == self.GOLD_COOKIE_COLOR_1 or pixel == self.GOLD_COOKIE_COLOR_2:
                     print(f"Located golden cookie at ({x}, {y}). Clicking...")
@@ -112,13 +113,22 @@ class Wafer:
 
     def tendGarden(self, farm):
         try:
-            self._openGarden()
+            coords = []
             for plot in farm.plots:
                 if plot.isMature:
                     if plot.ticksUntilDecay <= 3:
-                        print(f"Harvesting plot of {plot.data.name} located at ({plot.x}, {plot.y}) due to near-death.")
-                        pyautogui.click(farm.getPlotCoords(plot))
-            self._closeGarden()
+                        coord = farm.getPlotCoords(plot)
+                        if coord:
+                            coords.append([plot, coord])
+            if len(coords) > 0:
+                self._openGarden()
+                for c_data in coords:
+                    plot = c_data[0]
+                    coord = c_data[1]
+                    print(f"Harvesting plot of {plot.data.name} located at ({plot.x}, {plot.y}) due to near-death.")
+                    pyautogui.click(coord)
+                    time.sleep(0.5)
+                self._closeGarden()
         except Exception as e:
             print(e)
 
@@ -127,11 +137,8 @@ class Wafer:
             if self.running:
                 coords = pyautogui.locateOnScreen("img/closeGarden.png", grayscale=True, confidence=0.8)
                 if coords:
-                    self.mainClickingPaused = True
                     pyautogui.click(coords)
-                    self.mainClickingPaused = False
                     return True
-        self.mainClickingPaused = False
         return False
 
     def _openGarden(self):
@@ -139,9 +146,6 @@ class Wafer:
             if self.running:
                 coords = pyautogui.locateOnScreen("img/viewGarden.png", grayscale=True, confidence=0.8)
                 if coords:
-                    self.mainClickingPaused = True
                     pyautogui.click(coords)
-                    self.mainClickingPaused = False
                     return True
-        self.mainClickingPaused = False
         return False
