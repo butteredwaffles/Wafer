@@ -2,6 +2,7 @@ import pyautogui
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta
 
 from garden.garden import Garden
 
@@ -9,7 +10,6 @@ _GARDEN_SAVE_TEST = "1632097684929:0:1632004711938:1:224:228:1:0:1630975793383: 
 
 
 class Wafer:
-    GOLD_COOKIE_SEARCH_TIMER = 0.0  # in seconds
     GOLD_COOKIE_COLOR_1 = (193, 155, 71)
     GOLD_COOKIE_COLOR_2 = (225, 201, 111)
 
@@ -34,25 +34,23 @@ class Wafer:
         with ThreadPoolExecutor(max_workers=3) as executor:
             if self.mainAutoClickerEnabled:
                 executor.submit(self.clickMainCookie)
-            if self.goldenCookieAutoClickerEnabled:
-                executor.submit(self.clickGoldenCookies)
             executor.submit(self.runTasks)
 
     def clickGoldenCookies(self):
         print("Beginning search for golden cookies.")
-        while self.running:
-            sc = pyautogui.screenshot()
-            for x in range(300, sc.width - 300):
-                for y in range(300, sc.height - 300):
-                    pixel = sc.getpixel((x, y))
-                    if pixel == self.GOLD_COOKIE_COLOR_1 or pixel == self.GOLD_COOKIE_COLOR_2:
-                        print(f"Located golden cookie at ({x}, {y}). Clicking...")
-                        with self._lock:
-                            self.mainClickingPaused = True
-                            pyautogui.click(x=x, y=y)
-                            self.mainClickingPaused = False
-            # Wait x seconds in-between golden cookie searches.
-            time.sleep(self.GOLD_COOKIE_SEARCH_TIMER)
+        sc = pyautogui.screenshot()
+        for x in range(300, sc.width - 300):
+            for y in range(300, sc.height - 300):
+                pixel = sc.getpixel((x, y))
+                if pixel == self.GOLD_COOKIE_COLOR_1 or pixel == self.GOLD_COOKIE_COLOR_2:
+                    print(f"Located golden cookie at ({x}, {y}). Clicking...")
+                    with self._lock:
+                        self.mainClickingPaused = True
+                        pyautogui.click(x=x, y=y)
+                        self.mainClickingPaused = False
+                    return True
+        print("No golden cookie found.")
+        return False
 
     def clickMainCookie(self):
         print("Clicking main cookie.")
@@ -60,7 +58,6 @@ class Wafer:
             try:
                 while not self.mainClickingPaused:
                     pyautogui.click(self.cookieCoords)
-                    time.sleep(0.02)
             except pyautogui.FailSafeException:
                 print("Detected failsafe. Exiting.")
                 self.running = False
@@ -76,37 +73,57 @@ class Wafer:
             print("Could not locate main cookie.")
 
     def runTasks(self):
-        if self.running:
-            if self.gardenEnabled:
-                self.tendGarden()
-
-    def tendGarden(self):
         farmLevel = 5  # TODO: Grab from save file.
         farm = Garden(_GARDEN_SAVE_TEST, farmLevel)
+        nextTend = datetime.now()
+        nextGoldenCookieSearch = datetime.now()
+
+        while self.running:
+            if self.goldenCookieAutoClickerEnabled:
+                if nextGoldenCookieSearch <= datetime.now():
+                    self.clickGoldenCookies()
+                    nextGoldenCookieSearch += timedelta(seconds=1)
+            if self.gardenEnabled:
+                if nextTend <= datetime.now():
+                    # TODO: Change tend time based on soil type
+                    nextTend += timedelta(minutes=1)
+                    with self._lock:
+                        self.mainClickingPaused = True
+                        self.tendGarden(farm)
+                        self.mainClickingPaused = False
+
+    def tendGarden(self, farm):
+        try:
+            self._openGarden()
+            for plot in farm.plots:
+                if plot.isMature:
+                    if plot.ticksUntilDecay <= 2:
+                        print(f"Harvesting plot of {plot.data.name} located at ({plot.x}, {plot.y}) due to near-death.")
+                        pyautogui.click(farm.getPlotCoords(plot))
+            self._closeGarden()
+        except Exception as e:
+            print(e)
 
     def _closeGarden(self):
-        with self._lock:
-            for i in range(20):
-                if self.running:
-                    coords = pyautogui.locateOnScreen("img/closeGarden.png", grayscale=True, confidence=0.8)
-                    if coords:
-                        self.mainClickingPaused = True
-                        pyautogui.click(coords)
-                        self.mainClickingPaused = False
-                        return True
+        for i in range(20):
+            if self.running:
+                coords = pyautogui.locateOnScreen("img/closeGarden.png", grayscale=True, confidence=0.8)
+                if coords:
+                    self.mainClickingPaused = True
+                    pyautogui.click(coords)
+                    self.mainClickingPaused = False
+                    return True
         self.mainClickingPaused = False
         return False
 
     def _openGarden(self):
-        with self._lock:
-            for i in range(20):
-                if self.running:
-                    coords = pyautogui.locateOnScreen("img/viewGarden.png", grayscale=True, confidence=0.8)
-                    if coords:
-                        self.mainClickingPaused = True
-                        pyautogui.click(coords)
-                        self.mainClickingPaused = False
-                        return True
-
+        for i in range(20):
+            if self.running:
+                coords = pyautogui.locateOnScreen("img/viewGarden.png", grayscale=True, confidence=0.8)
+                if coords:
+                    self.mainClickingPaused = True
+                    pyautogui.click(coords)
+                    self.mainClickingPaused = False
+                    return True
         self.mainClickingPaused = False
         return False
