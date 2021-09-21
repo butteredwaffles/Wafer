@@ -4,6 +4,7 @@ from .plantData import PlantData
 from .plant import Plant
 import csv
 import re
+import pyautogui
 
 _CSV_FILENAME = "garden/cookieClickerPlants.csv"
 # Index is the farm level minus one.
@@ -49,6 +50,22 @@ class Garden:
         # data[8] is also unneeded - seems to be related to freezing?
         self.loadAllPlantData(data[10])
         self.loadAllPlotData(':'.join(data[11:len(data)]))
+
+    def getPlotCoords(self, plant: Plant):
+        farmPlotCoords = None
+        for i in range(10):
+            farmPlotCoords = pyautogui.locateCenterOnScreen("img/gardenPlot.png", grayscale=True, confidence=0.8)
+
+            if farmPlotCoords:
+                print("Found plot at " + str(farmPlotCoords))
+                pyautogui.moveTo(farmPlotCoords)
+                break
+        # farmPlotCoords holds location of [0, 0] plot
+        if farmPlotCoords:
+            point = pyautogui.Point(farmPlotCoords.x + (60*plant.x), farmPlotCoords.y + (60*plant.y))
+            return point
+        return None
+
 
     def loadAllPlantData(self, unlockedStr: str):
         index = 0

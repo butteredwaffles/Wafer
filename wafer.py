@@ -76,11 +76,9 @@ class Wafer:
             print("Could not locate main cookie.")
 
     def runTasks(self):
-        if self.gardenEnabled:
-            self.tendGarden()
-            self._openGarden()
-            time.sleep(5)
-            self._closeGarden()
+        if self.running:
+            if self.gardenEnabled:
+                self.tendGarden()
 
     def tendGarden(self):
         farmLevel = 5  # TODO: Grab from save file.
@@ -89,24 +87,26 @@ class Wafer:
     def _closeGarden(self):
         with self._lock:
             for i in range(20):
-                coords = pyautogui.locateOnScreen("img/closeGarden.png", grayscale=True, confidence=0.8)
-                if coords:
-                    self.mainClickingPaused = True
-                    pyautogui.click(coords)
-                    self.mainClickingPaused = False
-                    return True
+                if self.running:
+                    coords = pyautogui.locateOnScreen("img/closeGarden.png", grayscale=True, confidence=0.8)
+                    if coords:
+                        self.mainClickingPaused = True
+                        pyautogui.click(coords)
+                        self.mainClickingPaused = False
+                        return True
         self.mainClickingPaused = False
         return False
 
     def _openGarden(self):
         with self._lock:
             for i in range(20):
-                coords = pyautogui.locateOnScreen("img/viewGarden.png", grayscale=True, confidence=0.8)
-                if coords:
-                    self.mainClickingPaused = True
-                    pyautogui.click(coords)
-                    self.mainClickingPaused = False
-                    return True
+                if self.running:
+                    coords = pyautogui.locateOnScreen("img/viewGarden.png", grayscale=True, confidence=0.8)
+                    if coords:
+                        self.mainClickingPaused = True
+                        pyautogui.click(coords)
+                        self.mainClickingPaused = False
+                        return True
 
         self.mainClickingPaused = False
         return False
