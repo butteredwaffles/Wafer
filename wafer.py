@@ -1,13 +1,13 @@
 import pyautogui
 import threading
-import time
+import base64
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 
 from garden.garden import Garden
 
 _GARDEN_SAVE_TEST = "1632097684929:0:1632004711938:1:224:228:1:0:1630975793383: 1111000010000000000000000000000000 0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:1:45:0:0:2:72:0:0:0:0:0:0:0:0:4:43:0:0:0:0:0:0:0:0:5:35:0:0:3:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:,0,101"
-
+_SAVE_LOCATION = r"C:\Program Files (x86)\Steam\steamapps\common\Cookie Clicker\resources\app\save\save.cki"
 
 class Wafer:
     GOLD_COOKIE_COLOR_1 = (193, 155, 71)
@@ -24,6 +24,9 @@ class Wafer:
         self._lock = threading.Lock()
         self.running = True
         self.mainClickingPaused = False
+
+        self.gardenData = None
+        self.getSave()
 
         self.gardenEnabled = gardenEnabled
         self.mainAutoClickerEnabled = mainAutoClickerEnabled
@@ -72,9 +75,20 @@ class Wafer:
         if not self.cookieCoords:
             print("Could not locate main cookie.")
 
+    def getSave(self):
+        # Currently only worrying about garden data - add on as more
+        # features implemented
+        with open(_SAVE_LOCATION, "rb") as file:
+            data = file.read().split(b"%")[0]
+            missing_padding = len(data) % 4
+            if missing_padding:
+                data += b'=' * (4 - missing_padding)
+            data = str(base64.urlsafe_b64decode(data)).split('|')
+            farmBuildingData = data[5].split(';')[2]
+            gardenData = farmBuildingData.split(",")[4]
+            self.gardenData = gardenData
+
     def runTasks(self):
-        farmLevel = 5  # TODO: Grab from save file.
-        farm = Garden(_GARDEN_SAVE_TEST, farmLevel)
         nextTend = datetime.now()
         nextGoldenCookieSearch = datetime.now()
 
@@ -85,8 +99,12 @@ class Wafer:
                     nextGoldenCookieSearch += timedelta(seconds=1)
             if self.gardenEnabled:
                 if nextTend <= datetime.now():
+                    with self._lock:
+                        self.getSave()
                     # TODO: Change tend time based on soil type
                     nextTend += timedelta(minutes=1)
+                    farmLevel = 5  # TODO: Grab from save file.
+                    farm = Garden(self.gardenData, farmLevel)
                     with self._lock:
                         self.mainClickingPaused = True
                         self.tendGarden(farm)
@@ -97,7 +115,7 @@ class Wafer:
             self._openGarden()
             for plot in farm.plots:
                 if plot.isMature:
-                    if plot.ticksUntilDecay <= 2:
+                    if plot.ticksUntilDecay <= 3:
                         print(f"Harvesting plot of {plot.data.name} located at ({plot.x}, {plot.y}) due to near-death.")
                         pyautogui.click(farm.getPlotCoords(plot))
             self._closeGarden()
