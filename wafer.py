@@ -1,3 +1,5 @@
+from typing import List
+
 import pyautogui
 import threading
 import base64
@@ -40,19 +42,16 @@ class Wafer:
                 executor.submit(self.clickMainCookie)
             executor.submit(self.runTasks)
 
-    def clickGoldenCookies(self):
+    def findGoldenCookies(self):
+        coords: List[pyautogui.Point] = []
         sc = pyautogui.screenshot()
         for x in range(200, sc.width - 200, 2):
             for y in range(200, sc.height - 200, 2):
                 pixel = sc.getpixel((x, y))
                 if pixel == self.GOLD_COOKIE_COLOR_1 or pixel == self.GOLD_COOKIE_COLOR_2:
-                    self.logger.info(f"Located golden cookie at ({x}, {y}). Clicking...")
-                    with self._lock:
-                        self.mainClickingPaused = True
-                        pyautogui.click(x=x, y=y)
-                        self.mainClickingPaused = False
-                    return True
-        return False
+                    self.logger.info(f"Located golden cookie at ({x}, {y}).")
+                    coords.append(pyautogui.Point(x=x, y=y))
+        return coords
 
     def clickMainCookie(self):
         self.logger.info("Locating main cookie...")
@@ -92,7 +91,14 @@ class Wafer:
         while self.running:
             if self.goldenCookieAutoClickerEnabled:
                 if nextGoldenCookieSearch <= datetime.now():
-                    self.clickGoldenCookies()
+                    gCookies = self.findGoldenCookies()
+                    if len(gCookies) > 0:
+                        with self._lock:
+                            self.mainClickingPaused = True
+                            for gCookie in gCookies:
+                                pyautogui.click(gCookie)
+                                time.sleep(0.3)
+                            self.mainClickingPaused = False
                     nextGoldenCookieSearch += timedelta(seconds=1)
             if self.gardenEnabled:
                 if nextTend <= datetime.now():
