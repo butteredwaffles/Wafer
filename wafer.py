@@ -2,12 +2,12 @@ import pyautogui
 import threading
 import base64
 import time
+import logging
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 
 from garden.garden import Garden
 
-_GARDEN_SAVE_TEST = "1632097684929:0:1632004711938:1:224:228:1:0:1630975793383: 1111000010000000000000000000000000 0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:1:45:0:0:2:72:0:0:0:0:0:0:0:0:4:43:0:0:0:0:0:0:0:0:5:35:0:0:3:30:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:,0,101"
 _SAVE_LOCATION = r"C:\Program Files (x86)\Steam\steamapps\common\Cookie Clicker\resources\app\save\save.cki"
 
 class Wafer:
@@ -22,6 +22,7 @@ class Wafer:
                  mainAutoClickerEnabled: bool = True,
                  goldenCookieAuto: bool = True):
         self.cookieCoords = None
+        self.logger = logging.getLogger("wafer")
         self._lock = threading.Lock()
         self.running = True
         self.mainClickingPaused = False
@@ -34,7 +35,6 @@ class Wafer:
         self.goldenCookieAutoClickerEnabled = goldenCookieAuto
 
     def run(self):
-        self.calibrate()
         with ThreadPoolExecutor(max_workers=3) as executor:
             if self.mainAutoClickerEnabled:
                 executor.submit(self.clickMainCookie)
@@ -46,7 +46,7 @@ class Wafer:
             for y in range(200, sc.height - 200, 2):
                 pixel = sc.getpixel((x, y))
                 if pixel == self.GOLD_COOKIE_COLOR_1 or pixel == self.GOLD_COOKIE_COLOR_2:
-                    print(f"Located golden cookie at ({x}, {y}). Clicking...")
+                    self.logger.info(f"Located golden cookie at ({x}, {y}). Clicking...")
                     with self._lock:
                         self.mainClickingPaused = True
                         pyautogui.click(x=x, y=y)
@@ -55,24 +55,22 @@ class Wafer:
         return False
 
     def clickMainCookie(self):
-        print("Clicking main cookie.")
+        self.logger.info("Locating main cookie...")
+        for i in range(20):
+            self.cookieCoords = pyautogui.locateOnScreen("img/mainCookie.png", grayscale=True, confidence=0.5)
+            if self.cookieCoords:
+                self.logger.info("Found main cookie.")
+                break
+        if not self.cookieCoords:
+            self.logger.critical("Could not locate main cookie.")
+        self.logger.info("Beginning main cookie autoclicker.")
         while self.running:
             try:
                 while not self.mainClickingPaused:
                     pyautogui.click(self.cookieCoords)
             except pyautogui.FailSafeException:
-                print("Detected failsafe. Exiting.")
+                self.logger.critical("Detected failsafe. Exiting.")
                 self.running = False
-
-    def calibrate(self):
-        print("Locating main cookie...")
-        for i in range(100):
-            self.cookieCoords = pyautogui.locateOnScreen("img/mainCookie.png", grayscale=True, confidence=0.5)
-            if self.cookieCoords:
-                print("Found main cookie.\n")
-                break
-        if not self.cookieCoords:
-            print("Could not locate main cookie.")
 
     def getSave(self):
         # Currently only worrying about garden data - add on as more
@@ -128,12 +126,12 @@ class Wafer:
                 for c_data in coords:
                     plot = c_data[0]
                     coord = c_data[1]
-                    print(f"Harvesting plot of {plot.data.name} located at ({plot.x}, {plot.y}) due to near-death.")
+                    self.logger.info(f"Harvesting plot of {plot.data.name} located at ({plot.x}, {plot.y}) due to near-death.")
                     pyautogui.click(coord)
                     time.sleep(0.5)
                 self._closeGarden()
         except Exception as e:
-            print(e)
+            self.logger.exception(e)
 
     def _closeGarden(self):
         for i in range(20):
