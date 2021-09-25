@@ -27,6 +27,9 @@ Python 3.7+ is required.
 
 Make sure that your save is stored in `C:\Program Files (x86)\Steam\steamapps\common\Cookie Clicker\resources\app\save\save.cki`.
 
+## Screenshots/Videos
+![Golden cookie collection](https://i.imgur.com/t2mgBM0.mp4)
+
 ## Credits
 
 Cookie Clicker is the property of Orteil (https://orteil.dashnet.org/). I do not own anything.
