@@ -1,13 +1,15 @@
-from dataclasses import dataclass
 from datetime import datetime
 from .plantData import PlantData
 from .plant import Plant
+from typing import Optional
 import csv
 import re
 import pyautogui
 
 _CSV_FILENAME = "garden/cookieClickerPlants.csv"
-# Index is the farm level minus one.
+
+# The size of the garden is a 6x6 grid, but it will be smaller if your farm level is < 10.
+# This array holds information for the size reduction. Index is the farm level minus one.
 # Format is x1, y1, x2, y2
 _PLOT_LIMITS = [
     [2, 2, 4, 4],
@@ -21,9 +23,11 @@ _PLOT_LIMITS = [
     [0, 0, 6, 6],
 ]
 
-# 100,100,9162377854,5,1632091959972:0:1632004711938:0:219:223:1:0:1630975793383: 1110000010000000000000000000000000 0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:2:0:0:0:0:0:0:0:1:33:4:51:2:72:0:0:0:0:0:0:0:0:0:0:3:13:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:,0,100
-@dataclass
+
 class Garden:
+    """
+    Class representing the Garden minigame unlocked when you use a sugar lump to level up the Farm.
+    """
     nextStep: datetime
     soil: int
     nextSoil: datetime
@@ -37,6 +41,14 @@ class Garden:
 
     # Garden information starts before the first colon.
     def __init__(self, dataString: str, farmLevel: int):
+        """
+        Initialize a garden object.
+
+        :param dataString: The save information for the garden, resembling XX:XXXX:XXXXX:XXXX 1001010 XXX
+        :param farmLevel: The level of the farm.
+        :type dataString: str
+        :type farmLevel: int
+        """
         data = re.split(r'[\s:]', dataString)
         self.farmLevel = farmLevel
         self.nextStep = datetime.fromtimestamp(float(data[0]) / 1000)
@@ -53,8 +65,15 @@ class Garden:
 
         self.farmPlotCoords = None
 
-    def getPlotCoords(self, plant: Plant):
-        #  This is necessary since tooltips can block the identification.
+    def getPlotCoords(self, plant: Plant) -> Optional[pyautogui.Point]:
+        """
+        Take a Plant object as input and locate its position on the game screen.
+
+        :param plant: A Plant object containing the information for the plot you are looking for.
+        :return: The coordinates in a pyautogui.Point object, or None if not found.
+        :rtype: pyautogui.Point
+        """
+        #  This is necessary since hovered tooltips can block the identification.
         pyautogui.moveTo(x=30, y=30)
         if not self.farmPlotCoords:
             for i in range(10):
@@ -69,8 +88,14 @@ class Garden:
             return point
         return None
 
+    def loadAllPlantData(self, unlockedStr: str) -> None:
+        """
+        Load information for all plants from a .csv file and store it in a class variable.
 
-    def loadAllPlantData(self, unlockedStr: str):
+        :param unlockedStr: A series of 0s and 1s corresponding to each plant's unlocked status.
+        :type unlockedStr: str
+        :rtype: None
+        """
         index = 0
         self.unlockedPlants = []
         with open(_CSV_FILENAME, 'r') as file:
@@ -81,8 +106,8 @@ class Garden:
                 data.name = row["Name"]
                 data.id = int(row["ID"])
                 data.cost = int(row["Cost"])
-                data.minAgeTick = float(row["AgeTick"])
-                data.maxAgeTick = float(row["AgeTickR"])
+                data.ageTick = float(row["AgeTick"])
+                data.ageTickR = float(row["AgeTickR"])
                 data.mature = int(row["Mature"])
                 data.children = [int(plantID) for plantID in row["Children"].split('|') if row["Children"]]
                 data.immortal = row["Immortal"] == "yes"
@@ -91,7 +116,13 @@ class Garden:
                 data.plantable = row["Plantable"] == "yes"
                 self.unlockedPlants.append(data)
 
-    def loadAllPlotData(self, plotStr: str):
+    def loadAllPlotData(self, plotStr: str) -> None:
+        """
+        Create a grid of plants based on save data and store it in a class variable.
+
+        :param plotStr: The string consisting of the plant data and growth stage for every grid space.
+        :rtype: None
+        """
         p = plotStr.split(':')
         p.pop()
         p = iter(p)
