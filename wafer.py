@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 import pyautogui
 import threading
@@ -6,6 +6,9 @@ import base64
 import time
 import logging
 import building as bu
+import cv2
+import pytesseract
+import numpy as np
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 
@@ -44,6 +47,8 @@ class Wafer:
         self.buildings: Dict[str, bu.Building] = {}
         self.gardenData = None
         self.loadSave()
+        print("You have 3 seconds to switch windows.")
+        time.sleep(2)
 
         self.gardenEnabled = gardenEnabled
         self.mainAutoClickerEnabled = mainAutoClickerEnabled
@@ -249,3 +254,36 @@ class Wafer:
                     pyautogui.click(coords)
                     return True
         return False
+
+    def clickBuilding(self, name, clicks=1) -> bool:
+        """
+        Buys/sells a building given by "name".
+
+        :param name: The name of the building. Used as the filename.
+        :param clicks: The number of buildings to buy/sell.
+        :return: If the building was clicked successfully.
+        """
+        timesScrolled = 0
+        scrollAmount = 250
+        point = None
+        cursor = pyautogui.locateCenterOnScreen(f"img/cursor.png", grayscale=True, confidence=0.9)
+        while self.running and timesScrolled < 4 and not point:
+            point = pyautogui.locateCenterOnScreen(f"img/{name.lower()}.png", grayscale=True, confidence=0.95)
+            if not point:
+                pyautogui.moveTo(cursor)
+                pyautogui.scroll(-scrollAmount)
+                timesScrolled += 1
+        if point:
+            x, y = point.x, point.y
+            if timesScrolled > 0:
+                # There is an offset that happens for some reason when the window is scrolled
+                y -= scrollAmount * 0.5
+            pyautogui.moveTo(x=x, y=y)
+            pyautogui.click(interval=0.25, clicks=clicks)
+        if cursor:
+            pyautogui.moveTo(cursor)
+        pyautogui.scroll(scrollAmount*timesScrolled)
+        if not point:
+            return False
+        else:
+            return True

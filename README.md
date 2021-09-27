@@ -27,6 +27,7 @@ Then, minimize the command window and focus the game screen.
 
 Python 3.7+ is required.
 
+To improve consistency, turn particles off.
 Make sure that your save is stored in `C:\Program Files (x86)\Steam\steamapps\common\Cookie Clicker\resources\app\save\save.cki`.
 
 ## Screenshots/Videos
