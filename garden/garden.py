@@ -74,7 +74,7 @@ class Garden:
         :rtype: pyautogui.Point
         """
         #  This is necessary since hovered tooltips can block the identification.
-        pyautogui.moveTo(x=30, y=30)
+        pyautogui.moveTo(x=50, y=50)
         if not self.farmPlotCoords:
             for i in range(10):
                 farmPlotCoords = pyautogui.locateCenterOnScreen("img/gardenPlot.png", grayscale=True, confidence=0.8)

@@ -1,10 +1,11 @@
-from typing import List
+from typing import List, Dict
 
 import pyautogui
 import threading
 import base64
 import time
 import logging
+import building as bu
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 
@@ -40,6 +41,7 @@ class Wafer:
         self.running = True
         self.mainClickingPaused = False
 
+        self.buildings: Dict[str, bu.Building] = {}
         self.gardenData = None
         self.loadSave()
 
@@ -114,16 +116,23 @@ class Wafer:
 
         :rtype: None
         """
-        # Currently only worrying about garden data - add on as more
-        # features implemented
+
         with open(_SAVE_LOCATION, "rb") as file:
             # Data has a lot of extra information at the end for some reason after the %.
             data = file.read().split(b"%")[0]
             missing_padding = len(data) % 4
             if missing_padding:
                 data += b'=' * (4 - missing_padding)
-            data = str(base64.urlsafe_b64decode(data)).split('|')
-            farmBuildingData = data[5].split(';')[2]
+            data = str(base64.urlsafe_b64decode(data)).split("|")
+            buildings = data[5].split(";")
+            index = 0
+            for typ in bu.BUILDING_TYPES:
+                building = buildings[index].split(",")
+                bui = typ(int(building[0]), int(building[1]), int(building[2]), int(building[3]),
+                          int(building[6]))
+                self.buildings[bui.name.lower()] = bui
+                index += 1
+            farmBuildingData = data[5].split(";")[2]
             gardenData = farmBuildingData.split(",")[4]
             self.gardenData = gardenData
 
@@ -139,7 +148,6 @@ class Wafer:
         :rtype: None
         """
         # TODO: Change tend time based on soil type
-        # TODO: Grab farm level from save file.
         nextTend = datetime.now()
         nextGoldenCookieSearch = datetime.now()
 
@@ -161,7 +169,7 @@ class Wafer:
                         with self._lock:
                             self.loadSave()
                         nextTend += timedelta(minutes=1)
-                        farmLevel = 5
+                        farmLevel = self.buildings["farm"].level
                         farm = Garden(self.gardenData, farmLevel)
                         with self._lock:
                             self.mainClickingPaused = True
@@ -203,7 +211,6 @@ class Wafer:
                     self.logger.info(
                         f"Harvesting plot of {plot.data.name} located at ({plot.x}, {plot.y}) due to near-death.")
                     pyautogui.click(coord)
-                    time.sleep(0.5)
                 self._closeGarden()
         except pyautogui.FailSafeException:
             return  # handled in the runTasks function anyway since another function would have caught it as well

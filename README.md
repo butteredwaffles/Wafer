@@ -21,8 +21,10 @@ Unchecked boxes are planned, but not yet implemented, features. As the project i
 
 This program has only been tested on Windows computers with one monitor thus far.
 
-In the root directory, run
-`pip install requirements.txt && python app.py`  
+Run
+`pip install requirements.txt && python app.py` in the directory.
+Then, minimize the command window and focus the game screen.
+
 Python 3.7+ is required.
 
 Make sure that your save is stored in `C:\Program Files (x86)\Steam\steamapps\common\Cookie Clicker\resources\app\save\save.cki`.
