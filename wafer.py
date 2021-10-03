@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 import pyautogui
 import threading
@@ -6,12 +6,11 @@ import base64
 import time
 import logging
 import building as bu
-import cv2
-import pytesseract
-import numpy as np
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
+from mss import mss
 
+import helpers
 from garden.garden import Garden
 
 _SAVE_LOCATION = r"C:\Program Files (x86)\Steam\steamapps\common\Cookie Clicker\resources\app\save\save.cki"
@@ -48,7 +47,7 @@ class Wafer:
         self.gardenData = None
         self.loadSave()
         print("You have 3 seconds to switch windows.")
-        time.sleep(2)
+        time.sleep(3)
 
         self.gardenEnabled = gardenEnabled
         self.mainAutoClickerEnabled = mainAutoClickerEnabled
@@ -76,15 +75,26 @@ class Wafer:
         :rtype: list
         """
         coords: List[pyautogui.Point] = []
-        sc = pyautogui.screenshot()
+        sc = helpers.screenshot()
+
+        # Avoid getting multiple triggers from the same golden cookie
+        restrictions = []
+
         # Must search using color instead of by image because golden cookies rotate, bounce around,
         # etc. while also sharing the texture with the large normal cookie leading to confusion.
-        for x in range(200, sc.width - 200, 2):
-            for y in range(200, sc.height - 200, 2):
+        for x in range(100, sc.width - 100, 2):
+            for y in range(100, sc.height - 100, 2):
                 pixel = sc.getpixel((x, y))
-                if pixel == self.GOLD_COOKIE_COLOR_1 or pixel == self.GOLD_COOKIE_COLOR_2:
+                if (pixel == self.GOLD_COOKIE_COLOR_1 or pixel == self.GOLD_COOKIE_COLOR_2)\
+                        and not any([(res[0] < x < res[2]) and (res[1] < y < res[2]) for res in restrictions]):
                     self.logger.info(f"Located golden cookie at ({x}, {y}).")
                     coords.append(pyautogui.Point(x=x, y=y))
+                    restrictions.append((
+                        x-100,
+                        y-100,
+                        x+100,
+                        y+100
+                    ))
         return coords
 
     def clickMainCookie(self) -> None:
@@ -97,7 +107,7 @@ class Wafer:
         """
         self.logger.info("Locating main cookie...")
         for i in range(20):
-            self.cookieCoords = pyautogui.locateOnScreen("img/mainCookie.png", grayscale=True, confidence=0.5)
+            self.cookieCoords = helpers.locate("img/mainCookie.png", confidence=0.5)
             if self.cookieCoords:
                 self.logger.info("Found main cookie.")
                 break
@@ -166,7 +176,7 @@ class Wafer:
                                 self.mainClickingPaused = True
                                 for gCookie in gCookies:
                                     pyautogui.click(gCookie)
-                                    time.sleep(0.3)
+                                    time.sleep(0.2)
                                 self.mainClickingPaused = False
                         nextGoldenCookieSearch += timedelta(seconds=1)
                 if self.gardenEnabled:
@@ -234,7 +244,8 @@ class Wafer:
         """
         for i in range(20):
             if self.running:
-                coords = pyautogui.locateOnScreen("img/closeGarden.png", grayscale=True, confidence=0.9)
+                coords = helpers.locate("img/closeGarden.png")
+                #coords = pyautogui.locateOnScreen("img/closeGarden.png", grayscale=True, confidence=0.9)
                 if coords:
                     pyautogui.click(coords)
                     return True
@@ -249,7 +260,8 @@ class Wafer:
         """
         for i in range(20):
             if self.running:
-                coords = pyautogui.locateOnScreen("img/viewGarden.png", grayscale=True, confidence=0.8)
+                coords = helpers.locate("img/viewGarden.png", confidence=0.8)
+                #coords = pyautogui.locateOnScreen("img/viewGarden.png", grayscale=True, confidence=0.8)
                 if coords:
                     pyautogui.click(coords)
                     return True
@@ -266,9 +278,11 @@ class Wafer:
         timesScrolled = 0
         scrollAmount = 250
         point = None
-        cursor = pyautogui.locateCenterOnScreen(f"img/cursor.png", grayscale=True, confidence=0.9)
+        cursor = helpers.locate("img/cursor.png")
+        #cursor = pyautogui.locateCenterOnScreen(f"img/cursor.png", grayscale=True, confidence=0.9)
         while self.running and timesScrolled < 4 and not point:
-            point = pyautogui.locateCenterOnScreen(f"img/{name.lower()}.png", grayscale=True, confidence=0.95)
+            point = helpers.locate(f"img/{name.lower()}.png")
+            #point = pyautogui.locateCenterOnScreen(f"img/{name.lower()}.png", grayscale=True, confidence=0.95)
             if not point:
                 pyautogui.moveTo(cursor)
                 pyautogui.scroll(-scrollAmount)

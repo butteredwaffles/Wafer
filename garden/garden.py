@@ -1,10 +1,17 @@
 from datetime import datetime
+
+from PIL import Image
+
+import helpers
 from .plantData import PlantData
 from .plant import Plant
 from typing import Optional
+from helpers import screenshot
+from mss import mss
 import csv
 import re
 import pyautogui
+import logging
 
 _CSV_FILENAME = "garden/cookieClickerPlants.csv"
 
@@ -64,6 +71,7 @@ class Garden:
         self.loadAllPlotData(':'.join(data[11:len(data)]))
 
         self.farmPlotCoords = None
+        self.logger = logging.getLogger("wafer")
 
     def getPlotCoords(self, plant: Plant) -> Optional[pyautogui.Point]:
         """
@@ -75,11 +83,13 @@ class Garden:
         """
         #  This is necessary since hovered tooltips can block the identification.
         pyautogui.moveTo(x=50, y=50)
+
         if not self.farmPlotCoords:
-            for i in range(10):
-                farmPlotCoords = pyautogui.locateCenterOnScreen("img/gardenPlot.png", grayscale=True, confidence=0.8)
+            for i in range(3):
+                farmPlotCoords = helpers.locate("img/gardenPlot.png", grayscale=False, confidence=0.9)
 
                 if farmPlotCoords:
+                    self.logger.info(f"Located top-left farm plot at ({farmPlotCoords.x}, {farmPlotCoords.y}).")
                     self.farmPlotCoords = farmPlotCoords
                     break
             # farmPlotCoords holds location of [0, 0] plot
