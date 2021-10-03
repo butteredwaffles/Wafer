@@ -1,6 +1,9 @@
 # Wafer
 
-A Cookie Clicker Steam companion app utilizing GUI automation.
+A Cookie Clicker Steam companion app utilizing GUI automation.  
+This was made as an experiment in text identification and image recognition. As the game supports
+mods to interact with the code directly, this is not the most optimal way to automate
+CC. This application only knows the information that *you* know by opening the game!
 
 ## Features
 
@@ -25,7 +28,7 @@ Run
 `pip install requirements.txt && python app.py` in the directory.
 Then, minimize the command window and focus the game screen.
 
-Python 3.7+ is required.
+Python 3.7+, tesseract, and opencv are required.
 
 To improve consistency, turn particles off.
 Make sure that your save is stored in `C:\Program Files (x86)\Steam\steamapps\common\Cookie Clicker\resources\app\save\save.cki`.
