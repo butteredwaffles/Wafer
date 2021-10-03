@@ -1,5 +1,6 @@
-from .plantData import PlantData
 import math
+
+from .plantData import PlantData
 
 
 class Plant:

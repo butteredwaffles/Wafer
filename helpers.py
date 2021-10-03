@@ -1,8 +1,8 @@
 from typing import List
 
-from mss import mss
-from PIL import Image
 import pyautogui
+from PIL import Image
+from mss import mss
 
 
 def screenshot(monitor=1) -> Image:
@@ -19,7 +19,7 @@ def screenshot(monitor=1) -> Image:
         return img
 
 
-def locate(compareImage, monitor=1, grayscale=True, confidence=0.9) -> pyautogui.Point:
+def locate(compareImage, monitor=1, grayscale=True, confidence=0.9, center=True) -> pyautogui.Point:
     """
     Helper function to locate an image on a screen.
 
@@ -31,7 +31,10 @@ def locate(compareImage, monitor=1, grayscale=True, confidence=0.9) -> pyautogui
     """
     img = screenshot(monitor=monitor)
     box = pyautogui.locate(compareImage, img, grayscale=grayscale, confidence=confidence)
-    return pyautogui.Point(x=box.left+(box.width/2), y=box.top+(box.height/2))
+    if center:
+        return pyautogui.Point(x=box.left+(box.width/2), y=box.top+(box.height/2))
+    else:
+        return pyautogui.Point(x=box.left, y=box.top)
 
 
 def locateAll(compareImage, monitor=1, grayscale=True, confidence=0.9) -> List[pyautogui.Point]:

@@ -1,17 +1,14 @@
+import csv
+import logging
+import re
 from datetime import datetime
+from typing import Optional
 
-from PIL import Image
+import pyautogui
 
 import helpers
-from .plantData import PlantData
 from .plant import Plant
-from typing import Optional
-from helpers import screenshot
-from mss import mss
-import csv
-import re
-import pyautogui
-import logging
+from .plantData import PlantData
 
 _CSV_FILENAME = "garden/cookieClickerPlants.csv"
 
