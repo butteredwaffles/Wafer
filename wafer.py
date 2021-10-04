@@ -259,7 +259,6 @@ class Wafer:
         for i in range(20):
             if self.running:
                 coords = helpers.locate("img/closeGarden.png")
-                #coords = pyautogui.locateOnScreen("img/closeGarden.png", grayscale=True, confidence=0.9)
                 if coords:
                     pyautogui.click(coords)
                     return True
@@ -275,7 +274,6 @@ class Wafer:
         for i in range(20):
             if self.running:
                 coords = helpers.locate("img/viewGarden.png", confidence=0.8)
-                #coords = pyautogui.locateOnScreen("img/viewGarden.png", grayscale=True, confidence=0.8)
                 if coords:
                     pyautogui.click(coords)
                     return True
@@ -293,10 +291,8 @@ class Wafer:
         scrollAmount = 250
         point = None
         cursor = helpers.locate("img/cursor.png")
-        #cursor = pyautogui.locateCenterOnScreen(f"img/cursor.png", grayscale=True, confidence=0.9)
         while self.running and timesScrolled < 4 and not point:
             point = helpers.locate(f"img/{name.lower()}.png")
-            #point = pyautogui.locateCenterOnScreen(f"img/{name.lower()}.png", grayscale=True, confidence=0.95)
             if not point:
                 pyautogui.moveTo(cursor)
                 pyautogui.scroll(-scrollAmount)

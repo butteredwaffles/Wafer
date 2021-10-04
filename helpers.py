@@ -26,7 +26,7 @@ def locate(compareImage, monitor=1, grayscale=True, confidence=0.9, center=True)
     :param compareImage: The image you wish to find.
     :param monitor: The monitor number to screenshot.
     :param grayscale: Whether the image should be converted to grayscale or not before applying.
-    :param confidence: How precise to
+    :param confidence: How strict to be with image identification.
     :return: The point at which the image was found.
     """
     img = screenshot(monitor=monitor)
@@ -44,7 +44,7 @@ def locateAll(compareImage, monitor=1, grayscale=True, confidence=0.9) -> List[p
         :param compareImage: The image you wish to find.
         :param monitor: The monitor number to screenshot.
         :param grayscale: Whether the image should be converted to grayscale or not before applying.
-        :param confidence: How precise to
+        :param confidence: How strict to be with image identification.
         :return: The point at which the image was found.
         """
     img = screenshot(monitor=monitor)

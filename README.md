@@ -2,7 +2,7 @@
 
 A Cookie Clicker Steam companion app utilizing GUI automation.  
 This was made as an experiment in text identification and image recognition. As the game supports
-mods to interact with the code directly, this is not the most optimal way to automate
+mods to interact with the code directly, this app is **not** the most optimal way to automate
 CC. This application only knows the information that *you* know by opening the game!
 
 ## Features
