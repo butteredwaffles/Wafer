@@ -16,6 +16,7 @@ from mss import mss
 import building as bu
 import helpers
 from garden.garden import Garden
+from smarket.market import Market
 
 _SAVE_LOCATION = r"C:\Program Files (x86)\Steam\steamapps\common\Cookie Clicker\resources\app\save\save.cki"
 
@@ -30,6 +31,7 @@ WORDS_TO_POWER = {
     "septillion": 1E24
 }
 
+
 class Wafer:
     """
     The main app class. Links all "modules" together and handles initialization.
@@ -41,8 +43,8 @@ class Wafer:
     mainAutoClickerEnabled: bool
     goldenCookieAutoClickerEnabled: bool
 
-    def __init__(self, gardenEnabled: bool = True,
-                 mainAutoClickerEnabled: bool = True,
+    def __init__(self, gardenEnabled: bool = False,
+                 mainAutoClickerEnabled: bool = False,
                  goldenCookieAuto: bool = True):
         """
         Initialize the Wafer class with any configuration options.
@@ -59,6 +61,7 @@ class Wafer:
 
         self.buildings: Dict[str, bu.Building] = {}
         self.gardenData = None
+        self.marketData = None
         self.loadSave()
         print("You have 3 seconds to switch windows.")
         time.sleep(3)
@@ -161,9 +164,11 @@ class Wafer:
                           int(building[6]))
                 self.buildings[bui.name.lower()] = bui
                 index += 1
-            farmBuildingData = data[5].split(";")[2]
-            gardenData = farmBuildingData.split(",")[4]
-            self.gardenData = gardenData
+            farmBuildingData = buildings[2]
+            self.gardenData = farmBuildingData.split(",")[4]
+
+            bankBuildingData = buildings[5]
+            self.marketData = bankBuildingData.split(",")[4]
 
     def runTasks(self) -> None:
         """
@@ -181,6 +186,8 @@ class Wafer:
         nextGoldenCookieSearch = datetime.now()
 
         try:
+            market = Market(saveData=self.marketData, buildings=self.buildings)
+            [self.logger.info(stock) for stock in market.stocks]
             while self.running:
                 if self.goldenCookieAutoClickerEnabled:
                     if nextGoldenCookieSearch <= datetime.now():
@@ -207,6 +214,8 @@ class Wafer:
         except pyautogui.FailSafeException:
             self.logger.critical("Detected failsafe. Stopping.")
             self.running = False
+        except Exception as e:
+            self.logger.exception("Issue running tasks!")
 
     def tendGarden(self, farm: Garden) -> None:
         """

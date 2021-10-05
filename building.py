@@ -130,7 +130,7 @@ class TimeMachines(Building):
 
 class Condensers(Building):
     def __init__(self, amount: int, bought: int, total: int, level: int, highest: int):
-        super(Condensers, self).__init__("Antimatter Condensers", 11, amount, bought, total, level, highest)
+        super(Condensers, self).__init__("Antimatter Condenser", 11, amount, bought, total, level, highest)
         self._baseCost = 170000000000000
 
 
@@ -154,7 +154,7 @@ class FractalEngines(Building):
 
 class Consoles(Building):
     def __init__(self, amount: int, bought: int, total: int, level: int, highest: int):
-        super(Consoles, self).__init__("Javascript Consoles", 15, amount, bought, total, level, highest)
+        super(Consoles, self).__init__("Javascript Console", 15, amount, bought, total, level, highest)
         self._baseCost = 71000000000000000000
 
 

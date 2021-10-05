@@ -1,25 +1,41 @@
-"""
-SAVE CODE:
+from typing import List, Dict
 
-M.save=function()
-	{
-		//output cannot use ",", ";" or "|"
-		var str=''+
-		parseInt(M.officeLevel)+':'+
-		parseInt(M.brokers)+':'+
-		parseInt(M.graphLines)+':'+
-		parseFloat(M.profit)+':'+
-		parseInt(M.graphCols)+':'+
-		' ';
-		for (var iG=0;iG<M.goodsById.length;iG++)
-		{
-			var it=M.goodsById[iG];
-			str+=parseInt(it.val*100)+':'+parseInt(it.mode)+':'+parseInt(it.d*100)+':'+parseInt(it.dur)+':'+parseInt(it.stock)+':'+parseInt(it.hidden?1:0)+':'+parseInt(it.last)+'!';
-		}
-		str+=' '+parseInt(M.parent.onMinigame?'1':'0');
-		return str;
-	}
-"""
+from building import Building
+from smarket import stock
 
-# SAMPLE:
-# 0:0:1:-5.526190275271631:1: 1175:0:-4:430:0:0:0!430:4:-67:10:0:0:0!950:4:-107:212:0:0:0!723:2:-64:122:0:0:0!825:4:-115:24:0:0:0!3565:2:-42:508:0:0:0!1046:4:-178:21:0:0:0!4899:2:-60:191:0:0:0!10123:1:22:507:0:0:0!974:4:-179:265:0:0:0!1454:4:-213:356:0:1:0!4527:4:-170:129:0:1:0!12615:5:3:89:0:1:0!5335:4:-155:654:0:1:0!12621:2:-53:288:0:1:0!13707:5:-57:260:0:1:0! 0
+
+class Market:
+    def __init__(self, saveData: str, buildings: Dict[str, Building]):
+        data = saveData.split(" ")
+        gen = data[0].split(":")
+
+        # TODO: Take office level into account for capacity
+        self.officeLevel: int = int(gen[0])
+        """The current office level. Used to buy loans (unimplemented) or to influence storage capacity."""
+        self.brokers: int = int(gen[1])
+        """The current amount of brokers. Each reduces overhead by 5%."""
+        self.stocks: List[stock.Stock] = []
+
+        stockSaves = data[1].split("!")
+        self.loadStocks(stockSaves, buildings)
+
+    def loadStocks(self, stockSaves: List[str], buildings: Dict[str, Building]):
+        self.stocks = []
+        index = 0
+        bank_level = buildings["bank"].level
+        for key, value in stock.STOCK_DATA.items():
+            if value[2] == index:
+                save = stockSaves[index].split(":")
+                bdata = buildings[key.lower()]
+                self.stocks.append(stock.Stock(
+                    bank_level=bank_level,
+                    src_building_name=bdata.name.lower(),
+                    src_building_quantity=bdata.amount,
+                    src_building_level=bdata.level,
+                    value=float(save[0]) / 100,
+                    mode=int(save[1]),
+                    delta=float(save[2]),
+                    duration=int(save[3]),
+                    held=int(save[4])
+                ))
+                index += 1

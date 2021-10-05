@@ -18,6 +18,12 @@ STOCK_DATA = {
 }
 
 
+class StockStatus:
+    IDLE = 0
+    WAITING_FOR_FALL = 1
+    WAITING_FOR_RISE = 2
+
+
 class Stock:
     def __init__(self, bank_level: int, src_building_name: str, src_building_quantity: int,
                  src_building_level: int, duration: int, value: float, mode: int, delta: float, held: int):
@@ -60,3 +66,41 @@ class Stock:
 
         self.capacity: int = src_building_quantity + (src_building_level * 10)
         """The amount of this stock that can be held. Depends on the building associated with the stock."""
+
+        ###################
+        # Bot specific attributes
+        ###################
+
+        self.boughtFor: float = 0.0
+        """The amount of cookies paid for this stock in this cycle.
+        Zero indicates the bot has not purchased this stock yet. Includes overhead."""
+
+        self.soldFor: float = 0.0
+        """The amount of cookies gained from this stock in this cycle."""
+
+        self.lifetimeEarnings: float = 0.0
+        """The net profit of this stock."""
+
+        self.status: int = StockStatus.IDLE
+        """Used to track what the bot is currently doing with this stock."""
+
+    def __str__(self):
+        modes = ["stable", "slow rise", "slow fall", "fast rise", "fast fall", "chaotic"]
+        statuses = {
+            StockStatus.IDLE: "idle",
+            StockStatus.WAITING_FOR_FALL: "waiting for value to drop",
+            StockStatus.WAITING_FOR_RISE: "waiting for value to rise"
+        }
+        diff = round((self.getRestingDiff() - 1) * 100, 2)
+        return f"{self.symbol} ~ Valued at ${self.value} | {self.held}/{self.capacity} held | {self.duration}min " \
+               f"remaining in {modes[self.mode]} mode | Currently {statuses[self.status]} | {diff}% from resting"
+
+    def getRestingDiff(self) -> float:
+        """
+        Get the fraction of the current value over the resting value.
+
+        :return: The float containing the result.
+        :rtype: float
+        """
+        return self.value / self.resting_value
+
