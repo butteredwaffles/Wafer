@@ -11,6 +11,7 @@ class Config:
     def __init__(self):
         self.logger = logging.getLogger("wafer")
 
+        self.saveLocation = r"C:\Program Files (x86)\Steam\steamapps\common\Cookie Clicker\resources\app\save\save.cki"
         self.gardenEnabled = True
         self.mainAutoClickerEnabled = True
         self.goldenCookieClickerEnabled = True
@@ -31,6 +32,7 @@ class Config:
                     c = toml.load(f)
                     self.logger.info("Loaded config.")
 
+                    self.saveLocation = c["saveLocation"]
                     self.mainAutoClickerEnabled = c["mainAutoClickerEnabled"]
                     self.goldenCookieClickerEnabled = c["goldenCookieClickerEnabled"]
                     self.stockMarketEnabled = c["stockMarketEnabled"]
@@ -38,7 +40,7 @@ class Config:
                     self.buyLimit = c["buyLimit"]
                     self.sellLimit = c["sellLimit"]
 
-                except (TypeError, toml.TomlDecodeError):
+                except (TypeError, toml.TomlDecodeError, KeyError):
                     self.logger.info("Error: Could not decode config file. Re-generating.")
                     self.save()
         else:
@@ -48,6 +50,7 @@ class Config:
     def save(self):
         with open(CONFIG_PATH, "w") as f:
             data = toml.dumps({
+                "saveLocation": self.saveLocation,
                 "mainAutoClickerEnabled": self.mainAutoClickerEnabled,
                 "goldenCookieClickerEnabled": self.goldenCookieClickerEnabled,
                 "stockMarketEnabled": self.stockMarketEnabled,
@@ -65,7 +68,7 @@ class Config:
             """))
             data = _insert(data, "sellLimit", textwrap.dedent("""
             # Used with the stock minigame. The threshold at which the bot will sell a specific stock. Recommended to be
-            # 80.0 < x < 120.0 in order to turn a tidy profit in a reasonable amount of time.
+            # 20.0 < x < 100.0 in order to turn a tidy profit in a reasonable amount of time.
             """))
             f.write(data)
 

@@ -6,31 +6,13 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from typing import List, Dict
 
-import cv2
-import numpy as np
 import pyautogui
-import pytesseract
-from PIL import Image
-from mss import mss
 
 import building as bu
 import helpers
 from config import Config
 from garden.garden import Garden
 from smarket.market import Market
-
-_SAVE_LOCATION = r"C:\Program Files (x86)\Steam\steamapps\common\Cookie Clicker\resources\app\save\save.cki"
-
-WORDS_TO_POWER = {
-    "thousand": 1E3,
-    "million": 1E6,
-    "billion": 1E9,
-    "trillion": 1E12,
-    "quadrillion": 1E15,
-    "quintillion": 1E18,
-    "sextillion": 1E21,
-    "septillion": 1E24
-}
 
 
 class Wafer:
@@ -48,6 +30,7 @@ class Wafer:
         """
         Initialize the Wafer class with any configuration options. See config file for argument details.
         """
+        self.config = config
         self.cookieCoords = None
         self.logger = logging.getLogger("wafer")
         self._lock = threading.Lock()
@@ -61,7 +44,6 @@ class Wafer:
         print("You have 3 seconds to switch windows.")
         time.sleep(3)
 
-        self.config = config
         # Needed as a separate value as this is toggled during the program without necessarily being disabled by user
         self.mainAutoClickerEnabled = config.mainAutoClickerEnabled
 
@@ -144,7 +126,7 @@ class Wafer:
         :rtype: None
         """
 
-        with open(_SAVE_LOCATION, "rb") as file:
+        with open(self.config.saveLocation, "rb") as file:
             # Data has a lot of extra information at the end for some reason after the %.
             data = file.read().split(b"%")[0]
             missing_padding = len(data) % 4
@@ -179,10 +161,9 @@ class Wafer:
         # TODO: Change tend time based on soil type
         nextTend = datetime.now()
         nextGoldenCookieSearch = datetime.now()
+        nextMarketCheck = datetime.now()
 
         try:
-            market = Market(saveData=self.marketData, buildings=self.buildings)
-            [self.logger.info(stock) for stock in market.stocks]
             while self.running:
                 if self.config.goldenCookieClickerEnabled:
                     if nextGoldenCookieSearch <= datetime.now():
@@ -207,6 +188,13 @@ class Wafer:
                             self.mainClickingPaused = True
                             self.tendGarden(farm)
                             self.mainClickingPaused = False
+                if self.config.stockMarketEnabled:
+                    if nextMarketCheck <= datetime.now():
+                        with self._lock:
+                            self.loadSave()
+                        market = Market(self.config, self.marketData, self.buildings)
+                        market.evaluateStocks()
+                        nextMarketCheck += timedelta(seconds=30)
         except pyautogui.FailSafeException:
             self.logger.critical("Detected failsafe. Stopping.")
             self.running = False
@@ -316,35 +304,3 @@ class Wafer:
             return False
         else:
             return True
-
-    def getCPS(self, shortNumsEnabled=True):
-        coords = helpers.locate("img/cps.png", confidence=0.7, center=False)
-        with mss() as sct:
-            img = sct.grab(monitor={
-                "top": coords.y,
-                "left": coords.x,
-                "width": 400,
-                "height": 30,
-                "mon": 1
-            })
-
-            img = Image.frombytes('RGB', img.size, img.rgb)
-            # convert to grayscale
-            img = cv2.cvtColor(np.array(img), cv2.COLOR_BGR2GRAY)
-            # CPS text is white on black, so invert image before thresholding
-            img = cv2.bitwise_not(img)
-            # eliminate all non-white objects; ie everything other than the cps text
-            _, img = cv2.threshold(img, 1, 255, cv2.THRESH_BINARY)
-
-            if not shortNumsEnabled:
-                cps = pytesseract.image_to_string(img, config="--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789")\
-                    .strip()
-                return int(cps)
-            else:
-                strcps = pytesseract.image_to_string(img, config="--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789abcdefghilmnopqrstuvwxyz.\ ")\
-                    .replace("per second", "").strip()
-                num, power = strcps.split(" ")
-                if power in WORDS_TO_POWER:
-                    return int(float(num) * WORDS_TO_POWER[power])
-                else:
-                    self.logger.error("Could not locate CPS. Enable short numbers for more accuracy.")

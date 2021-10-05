@@ -1,3 +1,5 @@
+import helpers
+
 STOCK_DATA = {
     "farm": ["Cereals", "CRL", 0],
     "mine": ["Chocolate", "CHC", 1],
@@ -18,10 +20,23 @@ STOCK_DATA = {
 }
 
 
-class StockStatus:
-    IDLE = 0
-    WAITING_FOR_FALL = 1
-    WAITING_FOR_RISE = 2
+class StockMode:
+    # 0: stable - 12.5% chance: -5% delta, -0.025 - 0.025 delta fluctuation
+    # 1: slow rise - 25% chance: -1% delta, -0.005 - 0.005 delta fluct.
+    # 2: slow fall - 25% chance: -1% delta, -0.045 - 0.005 delta fluct.
+    # 3: fast rise - 12.5% chance: stock value fluct. between 0 - 1, -0.015 - 0.135 delta fluct.,
+    # 30% value fluct between -7 and 3
+    # 4: fast fall - 12.5% chance: stock value fluct. between -1 - 0, -0.135 - 0.015 delta fluct.,
+    # 30% value fluct between -3 and 7
+    # 5: chaotic - 12.5% chance: 50% chance stock value fluct. between -5 - 5, -0.15 - 0.15 delta fluct.,
+    # 30% value fluct between -3 and 7
+
+    STABLE = 0
+    SLOW_RISE = 1
+    SLOW_FALL = 2
+    FAST_RISE = 3
+    FAST_FALL = 4
+    CHAOTIC = 5
 
 
 class Stock:
@@ -43,15 +58,6 @@ class Stock:
         self.value: float = value
         """The current value of the stock, measured in $econds of CPS. Ex. $1200 = 20 minutes of CPS."""
 
-        # 0: stable - 12.5% chance: -5% delta, -0.025 - 0.025 delta fluctuation
-        # 1: slow rise - 25% chance: -1% delta, -0.005 - 0.005 delta fluct.
-        # 2: slow fall - 25% chance: -1% delta, -0.045 - 0.005 delta fluct.
-        # 3: fast rise - 12.5% chance: stock value fluct. between 0 - 1, -0.015 - 0.135 delta fluct.,
-        # 30% value fluct between -7 and 3
-        # 4: fast fall - 12.5% chance: stock value fluct. between -1 - 0, -0.135 - 0.015 delta fluct.,
-        # 30% value fluct between -3 and 7
-        # 5: chaotic - 12.5% chance: 50% chance stock value fluct. between -5 - 5, -0.15 - 0.15 delta fluct.,
-        # 30% value fluct between -3 and 7
         self.mode: int = mode
         """The mode the stock is currently in."""
 
@@ -81,26 +87,17 @@ class Stock:
         self.lifetimeEarnings: float = 0.0
         """The net profit of this stock."""
 
-        self.status: int = StockStatus.IDLE
-        """Used to track what the bot is currently doing with this stock."""
-
     def __str__(self):
         modes = ["stable", "slow rise", "slow fall", "fast rise", "fast fall", "chaotic"]
-        statuses = {
-            StockStatus.IDLE: "idle",
-            StockStatus.WAITING_FOR_FALL: "waiting for value to drop",
-            StockStatus.WAITING_FOR_RISE: "waiting for value to rise"
-        }
-        diff = round((self.getRestingDiff() - 1) * 100, 2)
-        return f"{self.symbol} ~ Valued at ${self.value} | {self.held}/{self.capacity} held | {self.duration}min " \
-               f"remaining in {modes[self.mode]} mode | Currently {statuses[self.status]} | {diff}% from resting"
+        return f"{self.symbol} ~ Valued at ${self.value:.2f} | {self.held}/{self.capacity} held | {self.duration}min " \
+               f"remaining in {modes[self.mode]} mode | {self.getRestingDiff():.2f}% from resting"
 
     def getRestingDiff(self) -> float:
         """
-        Get the fraction of the current value over the resting value.
+        Get the percentage of the current value over the resting value.
 
         :return: The float containing the result.
         :rtype: float
         """
-        return self.value / self.resting_value
+        return round(((self.value / self.resting_value) - 1) * 100, 2)
 
