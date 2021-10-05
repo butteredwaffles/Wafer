@@ -15,6 +15,7 @@ from mss import mss
 
 import building as bu
 import helpers
+from config import Config
 from garden.garden import Garden
 from smarket.market import Market
 
@@ -43,15 +44,9 @@ class Wafer:
     mainAutoClickerEnabled: bool
     goldenCookieAutoClickerEnabled: bool
 
-    def __init__(self, gardenEnabled: bool = False,
-                 mainAutoClickerEnabled: bool = False,
-                 goldenCookieAuto: bool = True):
+    def __init__(self, config: Config):
         """
-        Initialize the Wafer class with any configuration options.
-
-        :param gardenEnabled: Enables/disables the auto-play of the "farm" minigame.
-        :param mainAutoClickerEnabled: Enables/disables auto-clicking the big cookie.
-        :param goldenCookieAuto: Enables/disables auto-clicking any golden cookie that appears.
+        Initialize the Wafer class with any configuration options. See config file for argument details.
         """
         self.cookieCoords = None
         self.logger = logging.getLogger("wafer")
@@ -66,9 +61,9 @@ class Wafer:
         print("You have 3 seconds to switch windows.")
         time.sleep(3)
 
-        self.gardenEnabled = gardenEnabled
-        self.mainAutoClickerEnabled = mainAutoClickerEnabled
-        self.goldenCookieAutoClickerEnabled = goldenCookieAuto
+        self.config = config
+        # Needed as a separate value as this is toggled during the program without necessarily being disabled by user
+        self.mainAutoClickerEnabled = config.mainAutoClickerEnabled
 
     def run(self) -> None:
         """
@@ -173,10 +168,10 @@ class Wafer:
     def runTasks(self) -> None:
         """
         Decide which features of the bot are enabled and activate the corresponding functions.
+        This function also handles the interval at which each task will be run.
 
-        This function also handles the interval at which each task will be run.\n
-        - Golden cookies are searched for every second.\n
-        - Farm is currently managed every minute, but in the future may change depending on soil.\n
+        - Golden cookies are searched for every second.
+        - Farm is currently managed every minute, but in the future may change depending on soil.
         Will run in an infinite loop, but will exit if failsafe is detected.
 
         :rtype: None
@@ -189,7 +184,7 @@ class Wafer:
             market = Market(saveData=self.marketData, buildings=self.buildings)
             [self.logger.info(stock) for stock in market.stocks]
             while self.running:
-                if self.goldenCookieAutoClickerEnabled:
+                if self.config.goldenCookieClickerEnabled:
                     if nextGoldenCookieSearch <= datetime.now():
                         gCookies = self.findGoldenCookies()
                         if len(gCookies) > 0:
@@ -200,7 +195,7 @@ class Wafer:
                                     time.sleep(0.2)
                                 self.mainClickingPaused = False
                         nextGoldenCookieSearch += timedelta(seconds=1)
-                if self.gardenEnabled:
+                if self.config.gardenEnabled:
                     if nextTend <= datetime.now():
                         with self._lock:
                             self.loadSave()
@@ -208,6 +203,7 @@ class Wafer:
                         farmLevel = self.buildings["farm"].level
                         farm = Garden(self.gardenData, farmLevel)
                         with self._lock:
+                            self.logger.info("Tending garden.")
                             self.mainClickingPaused = True
                             self.tendGarden(farm)
                             self.mainClickingPaused = False
