@@ -3,7 +3,7 @@
 A Cookie Clicker Steam companion app utilizing GUI automation.  
 This was made as an experiment in text identification and image recognition. As the game supports
 mods to interact with the code directly, this app is **not** the most optimal way to automate
-CC. This application only knows the information that *you* know by opening the game!
+CC. This application only knows the information that *you* know by opening the game or that you can glean from calculations!
 
 ## Features
 
@@ -17,7 +17,7 @@ Unchecked boxes are planned, but not yet implemented, features. As the project i
 [ ] Prioritize crop buffs OR new seeds  
 [ ] Harvest ripe sugar lumps  
 [ ] Cast useful spells  
-[ ] Play the stock market  
+[x] Play the stock market  
 [ ] Prioritize buying specific buildings OR buying new upgrades  
 
 ## Usage
@@ -32,6 +32,10 @@ Python 3.7+, tesseract, and opencv are required.
 
 To improve consistency, turn particles off.
 Make sure that your save is stored in `C:\Program Files (x86)\Steam\steamapps\common\Cookie Clicker\resources\app\save\save.cki`.
+
+## Acronyms
+A few common acronyms used in the codebase:
+- CPS = cookies per second
 
 ## Screenshots/Videos
 ### Golden cookie collection

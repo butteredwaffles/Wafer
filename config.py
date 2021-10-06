@@ -1,5 +1,6 @@
 import toml
 import os
+import sys
 import logging
 import textwrap
 
@@ -15,15 +16,20 @@ class Config:
         self.gardenEnabled = True
         self.mainAutoClickerEnabled = True
         self.goldenCookieClickerEnabled = True
-        self.stockMarketEnabled = True
+        self.stockMarketEnabled = False
 
-        self.buyLimit = -100.0
-        self.sellLimit = 90.0
+        self.buyLimit = -90.0
+        self.sellLimit = 40.0
 
         if ALWAYS_DELETE:
             self.save()
         else:
             self.load()
+
+        if self.stockMarketEnabled and self.gardenEnabled:
+            self.logger.critical("Stock market and garden has not been configured to work at the same time! "
+                                 "Toggle one or the other.")
+            sys.exit(1)
 
     def load(self):
         if os.path.exists(CONFIG_PATH):
@@ -63,12 +69,12 @@ class Config:
             data = _insert(data, "garden", "\n# Toggles management of the garden minigame.\n")
             data = _insert(data, "stockMarket", "\n# Toggles management of the stock market minigame.\n")
             data = _insert(data, "buyLimit", textwrap.dedent("""
-            # Used with the stock minigame. The threshold at which the bot will buy a specific stock. Recommended to be
-            # -120.0 < x < -80.0 in order to turn a tidy profit.
+            # Used with the stock minigame. The threshold at which the bot will buy a specific stock, relative
+            # to its resting price.
             """))
             data = _insert(data, "sellLimit", textwrap.dedent("""
-            # Used with the stock minigame. The threshold at which the bot will sell a specific stock. Recommended to be
-            # 20.0 < x < 100.0 in order to turn a tidy profit in a reasonable amount of time.
+            # Used with the stock minigame. The threshold at which the bot will sell a specific stock, relative
+            # to its resting price.
             """))
             f.write(data)
 

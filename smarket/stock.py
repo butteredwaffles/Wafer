@@ -40,7 +40,7 @@ class StockMode:
 
 
 class Stock:
-    def __init__(self, bank_level: int, src_building_name: str, src_building_quantity: int,
+    def __init__(self, office_level: int, bank_level: int, src_building_name: str, src_building_quantity: int,
                  src_building_level: int, duration: int, value: float, mode: int, delta: float, held: int):
         st = STOCK_DATA[src_building_name.lower()]
         self.id: int = st[2]
@@ -70,8 +70,22 @@ class Stock:
         self.resting_value: int = 10 * (self.id + 1) + (bank_level - 1)
         """The value that the stock tends to go towards. Increases with the level of banks."""
 
-        self.capacity: int = src_building_quantity + (src_building_level * 10)
+        self.capacity: int = src_building_level * 10
         """The amount of this stock that can be held. Depends on the building associated with the stock."""
+
+        if office_level > 0:
+            self.capacity += 25
+        if office_level > 1:
+            self.capacity += 50
+        if office_level > 2:
+            self.capacity += 75
+        if office_level > 3:
+            self.capacity += 100
+
+        if office_level > 4:
+            self.capacity += src_building_quantity * 1.5
+        else:
+            self.capacity += src_building_quantity
 
         ###################
         # Bot specific attributes

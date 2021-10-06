@@ -192,7 +192,7 @@ class Wafer:
                             self.mainClickingPaused = False
                 if self.config.stockMarketEnabled:
                     if nextMarketCheck <= datetime.now():
-                        #[print(stock) for stock in market.stocks]
+                        # [print(stock) for stock in market.stocks]
                         with self._lock:
                             self.loadSave()
                             data = self.marketData.split(" ")
