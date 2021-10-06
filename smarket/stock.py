@@ -1,5 +1,3 @@
-import helpers
-
 STOCK_DATA = {
     "farm": ["Cereals", "CRL", 0],
     "mine": ["Chocolate", "CHC", 1],
@@ -56,13 +54,13 @@ class Stock:
         """The remaining duration of the current mode. Ticks down every minute."""
 
         self.value: float = value
-        """The current value of the stock, measured in $econds of CPS. Ex. $1200 = 20 minutes of CPS."""
+        """The current value of the stock, measured in $ - seconds of highest CPS. Ex. $1200 = 20 minutes of CPS."""
 
         self.mode: int = mode
         """The mode the stock is currently in."""
 
         self.delta: float = delta
-        """The amount randomly added to the value."""
+        """The amount randomly added to the value each tick."""
 
         self.held: int = held
         """The amount of this stock currently in possession."""

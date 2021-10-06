@@ -7,17 +7,17 @@ CC. This application only knows the information that *you* know by opening the g
 
 ## Features
 
-Unchecked boxes are planned, but not yet implemented, features. As the project is still in an early stage and relies on objection detection, things may slip through the cracks occasionally.
+Unchecked boxes are planned, but not yet implemented, features. As the project is still in an early stage and relies on object detection, things may slip through the cracks occasionally.
 
 
 [x] Click the large cookie at a steady rate  
 [x] Locate and click around 80% of gold cookies that appear  
-[ ] Manage wrinklers  
+[x] Play the stock market  
 [x] Autoharvest garden crops that are about to decay  
 [ ] Prioritize crop buffs OR new seeds  
 [ ] Harvest ripe sugar lumps  
 [ ] Cast useful spells  
-[x] Play the stock market  
+[ ] Manage wrinklers  
 [ ] Prioritize buying specific buildings OR buying new upgrades  
 
 ## Usage
@@ -30,12 +30,21 @@ Then, minimize the command window and focus the game screen.
 
 Python 3.7+, tesseract, and opencv are required.
 
-To improve consistency, turn particles off.
-Make sure that your save is stored in `C:\Program Files (x86)\Steam\steamapps\common\Cookie Clicker\resources\app\save\save.cki`.
+To improve consistency, turn particles off. Make sure to make any adjustments
+you would like to `config.toml` before running!
 
-## Acronyms
+## Acronyms / Definitions
+Most methods/classes are documented with their purpose.
+
 A few common acronyms used in the codebase:
 - CPS = cookies per second
+
+Definitions:
+- Wrinklers = Creatures that consume CPS, but can be popped to give more cookies.
+- Spells = Buttons with a % chance of backfiring that can do a variety of tasks,
+like generating new cookies or creating wrinklers.
+- Golden cookies = Cookies that randomly appear on the screen that usually massively
+increase production for a limited period of time.
 
 ## Screenshots/Videos
 ### Golden cookie collection

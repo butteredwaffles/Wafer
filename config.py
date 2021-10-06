@@ -1,8 +1,9 @@
-import toml
+import logging
 import os
 import sys
-import logging
 import textwrap
+
+import toml
 
 CONFIG_PATH = "config.toml"
 ALWAYS_DELETE = False  # for debugging config gen

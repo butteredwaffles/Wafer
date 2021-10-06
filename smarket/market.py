@@ -28,7 +28,7 @@ class Market:
         self.officeLevel: int = int(gen[0])
         """The current office level. Used to buy loans (unimplemented) or to influence storage capacity."""
         self.brokers: int = int(gen[1])
-        """The current amount of brokers. Each reduces overhead by 5%."""
+        """The current amount of brokers. Each reduces overhead by 5% (multiplicative)."""
 
         stockSaves = data[1].split("!")
         self.config = config
@@ -151,7 +151,7 @@ class Market:
         Decide what stocks should be bought or sold, depending on the configuration.
 
         Each stock mode has its own behavior. If a stock surpasses the market cap of
-        100 + 3(Bank level-1), then it is automatically sold.
+        $100 + $3(Bank level-1), then it is automatically sold.
 
         A return value of 0 means no changes happened, negative numbers mean more stocks were
         sold than bought, and positive numbers mean more stocks were bought than sold.

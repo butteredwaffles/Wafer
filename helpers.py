@@ -45,6 +45,7 @@ def locate(compareImage, monitor=1, grayscale=True, confidence=0.9, center=True)
     :param monitor: The monitor number to screenshot.
     :param grayscale: Whether the image should be converted to grayscale or not before applying.
     :param confidence: How strict to be with image identification.
+    :param center: Whether to return the coordinate from the center of the found image or from the top-left.
     :return: The point at which the image was found.
     """
     img = screenshot(monitor=monitor)
@@ -70,7 +71,7 @@ def locateAll(compareImage, monitor=1, grayscale=True, confidence=0.9) -> List[p
     return [pyautogui.Point(x=box.left+(box.width/2), y=box.top+(box.height/2)) for box in boxes]
 
 
-def getCPS(shortNumsEnabled=True):
+def getCurrentCPS(shortNumsEnabled=True):
     coords = locate("img/cps.png", confidence=0.7, center=False)
     with mss() as sct:
         img = sct.grab(monitor={
@@ -101,7 +102,7 @@ def getCPS(shortNumsEnabled=True):
             if power in WORDS_TO_POWER:
                 return int(float(num) * WORDS_TO_POWER[power])
             else:
-                logging.getLogger("wafer").error("Could not locate CPS. Enable short numbers for more accuracy.")
+                logging.getLogger("wafer").error("Could not locate CPS. Disable short numbers for more accuracy.")
 
 
 def getCookies(config: Config):
