@@ -163,6 +163,8 @@ class Wafer:
         nextGoldenCookieSearch = datetime.now()
         nextMarketCheck = datetime.now()
 
+        market = Market(self.config, self.marketData, self.buildings)
+
         try:
             while self.running:
                 if self.config.goldenCookieClickerEnabled:
@@ -190,11 +192,21 @@ class Wafer:
                             self.mainClickingPaused = False
                 if self.config.stockMarketEnabled:
                     if nextMarketCheck <= datetime.now():
+                        #[print(stock) for stock in market.stocks]
                         with self._lock:
                             self.loadSave()
-                        market = Market(self.config, self.marketData, self.buildings)
-                        market.evaluateStocks()
-                        nextMarketCheck += timedelta(seconds=30)
+                            data = self.marketData.split(" ")
+                            market.updateStocks(data[1].split("!"), self.buildings)
+                            self.mainClickingPaused = True
+                            activity = market.evaluateStocks()
+                            self.mainClickingPaused = False
+
+                        if activity != 0:
+                            # avoid double-buying stocks by ensuring a tick has gone by and the save file has updated
+                            # before the next check
+                            nextMarketCheck += timedelta(minutes=1)
+                        else:
+                            nextMarketCheck += timedelta(seconds=30)
         except pyautogui.FailSafeException:
             self.logger.critical("Detected failsafe. Stopping.")
             self.running = False

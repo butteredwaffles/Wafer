@@ -75,3 +75,4 @@ venv.bak/
 
 # Project-specific
 reference.txt
+mdata.toml

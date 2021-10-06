@@ -1,9 +1,9 @@
 saveLocation = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Cookie Clicker\\resources\\app\\save\\save.cki"
 # Toggles whether the main cookie is automatically clicked.
-mainAutoClickerEnabled = false
+mainAutoClickerEnabled = true
 
 # Toggles whether golden cookies are automatically clicked.
-goldenCookieClickerEnabled = false
+goldenCookieClickerEnabled = true
 
 # Toggles management of the stock market minigame.
 stockMarketEnabled = true
@@ -17,4 +17,4 @@ buyLimit = -90.0
 
 # Used with the stock minigame. The threshold at which the bot will sell a specific stock. Recommended to be
 # 20.0 < x < 100.0 in order to turn a tidy profit in a reasonable amount of time.
-sellLimit = 40.0
+sellLimit = 50.0
