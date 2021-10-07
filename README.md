@@ -45,6 +45,8 @@ Definitions:
 like generating new cookies or creating wrinklers.
 - Golden cookies = Cookies that randomly appear on the screen that usually massively
 increase production for a limited period of time.
+- Ascension - Resetting building amounts and CPS to unlock more bonuses in the next playthrough.
+- Sugar lumps - can be spent on buildings to increase their levels and unlock bonuses
 
 ## Screenshots/Videos
 ### Golden cookie collection
