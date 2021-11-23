@@ -7,7 +7,7 @@ CC. This application only knows the information that *you* know by opening the g
 
 ## Features
 
-Unchecked boxes are planned, but not yet implemented, features. As the project is still in an early stage and relies on object detection, things may slip through the cracks occasionally.
+Unchecked boxes are planned, but not yet implemented, features. As the project is still in an early stage and relies on object detection, things may slip through the cracks occasionally. The game also takes a fair bit of time to progress in, and I have to unlock the feature before I can automate it.
 
 
 [x] Click the large cookie at a steady rate  
